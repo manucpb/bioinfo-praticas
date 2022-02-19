@@ -1,104 +1,26 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-
-orbs:
-  python: circleci/python@2.0.1
-
-
-commands:
-
-  copy-miniwdl-artifacts:
-    description: Organiza os arquivos de log gerados pelo pytest-workflow
-    steps:
-      - run:
-          name: Prepare miniwdl artifacts
-          command: |
-            set -x ;
-            mkdir ~/workdir ;
-            for i in ~/pytest-workdir/*/_LAST/*.txt ~/pytest-workdir/*/_LAST/*.log ~/pytest-workdir/*/_LAST/command ~/pytest-workdir/*/log.err;  do
-              directory="$(echo $i | cut -d "/" -f 5)";
-              if [[ "${directory}" != "*" ]] ;
-              then
-                mkdir -p ~/workdir/$directory;
-                cp $i ~/workdir/$directory;
-              fi
-            done
-          when: always
-
-
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  predicao-de-sexo:
-    machine:
-      image: ubuntu-2004:202111-02
-    resource_class: medium
+  say-hello:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: cimg/base:stable
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
-      - run: pyenv global 3.9.7
-      - run: ln -s /opt/circleci/.pyenv ~/
-      - python/install-packages:
-          pkg-manager: pip
-
       - run:
-          name: Run tests
-          working_directory: predicao-de-sexo
-          command: pytest --keep-workflow-wd --basetemp ~/pytest-workdir/ --junitxml=test-results/junit.xml
-      - copy-miniwdl-artifacts
-      - store_test_results:
-          path: predicao-de-sexo/test-results
-      - store_artifacts:
-          path: predicao-de-sexo/test-results
-      - store_artifacts:
-          path: ~/workdir
+          name: "Say hello"
+          command: "echo Hello, World!"
 
-  deteccao-sars-cov-2:
-    machine:
-      image: ubuntu-2004:202111-02
-    resource_class: medium
-    steps:
-      - checkout
-      - run: pyenv global 3.9.7
-      - run: ln -s /opt/circleci/.pyenv ~/
-      - python/install-packages:
-          pkg-manager: pip
-
-      - run:
-          name: Run tests deteccao-sars-cov-2
-          working_directory: deteccao-sars-cov-2
-          command: pytest --keep-workflow-wd --basetemp ~/pytest-workdir/ --junitxml=test-results/junit.xml
-      - copy-miniwdl-artifacts
-      - store_test_results:
-          path: deteccao-sars-cov-2/test-results
-      - store_artifacts:
-          path: deteccao-sars-cov-2/test-results
-      - store_artifacts:
-          path: ~/workdir
-
-  deteccao-linhagem-covid:
-    machine:
-      image: ubuntu-2004:202111-02
-    resource_class: medium
-    steps:
-      - checkout
-      - run: pyenv global 3.9.7
-      - run: ln -s /opt/circleci/.pyenv ~/
-      - python/install-packages:
-          pkg-manager: pip
-
-      - run:
-          name: Run tests deteccao-linhagem-covid
-          working_directory: deteccao-linhagem-covid
-          command: pytest --keep-workflow-wd --basetemp ~/pytest-workdir/ --junitxml=test-results/junit.xml
-      - copy-miniwdl-artifacts
-      - store_test_results:
-          path: deteccao-linhagem-covid/test-results
-      - store_artifacts:
-          path: deteccao-linhagem-covid/test-results
-      - store_artifacts:
-          path: ~/workdir
-
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  testes-de-workflows:
+  say-hello-workflow:
     jobs:
-      - predicao-de-sexo
-      - deteccao-sars-cov-2
-      - deteccao-linhagem-covid
+      - say-hello
